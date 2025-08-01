@@ -16,18 +16,8 @@ API Gatewayを介したLambda関数（Python/PHP）を組み合わせ、
 　⇒ 一致するものがあった場合は、TOPページに移行　
 
 
-2: 自PC ⇒ CSVのデータ ⇒ S3 Bucket PUT ⇒ Lambda ⇒ CSVデータを1行ずつDynamoDBにアップロード 
-　　⇒ 自動的にHTML作成 & S3 アップロード ⇒ Top PageのURLを全HTMLファイルのリンクで更新しS3 bucketにアップロード
+2: 自PC ⇒ CSVのデータ ⇒ S3 Bucket PUT ⇒ Lambda ⇒ CSVデータを1行ずつDynamoDBにアップロード ⇒ 自動的にHTML作成 & S3 アップロード 
+
+　　⇒ Top PageのURLを全HTMLファイルのリンクで更新しS3 bucketにアップロード
 
   　⇒ Top pageから各HTMLページにアクセスできるように。
-
-
-## 🧩 構成図
-
-  S3 --> APIGW
-  APIGW --> Lambda
-  Lambda --> SSM
-  CFN --> S3
-  CFN --> APIGW
-  CFN --> Lambda
-  CFN --> SSM
