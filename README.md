@@ -17,18 +17,12 @@ API Gatewayを介したLambda関数（Python/PHP）を組み合わせ、
 
 
 2: 自PC ⇒ CSVのデータ ⇒ S3 Bucket PUT ⇒ Lambda ⇒ CSVデータを1行ずつDynamoDBにアップロード 
-　　⇒ データを利用して、自動的にHTML作成 & HTMLファイルをS3 アップロード & Top PageのURL更新しS3 bucketにアップロード
+　　⇒ 自動的にHTML作成 & S3 アップロード ⇒ Top PageのURLを全HTMLファイルのリンクで更新しS3 bucketにアップロード
+
+  　⇒ Top pageから各HTMLページにアクセスできるように。
 
 
-## 🧩 構成図（Mermaid）
-
-```mermaid
-graph TD
-  S3[📦 S3 (Static Website)]
-  APIGW[🚪 API Gateway]
-  Lambda[🧠 Lambda (Python/PHP)]
-  SSM[🔐 AWS SSM Parameter Store]
-  CFN[📐 aws-cfn-tools (CloudFormation)]
+## 🧩 構成図
 
   S3 --> APIGW
   APIGW --> Lambda
