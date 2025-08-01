@@ -1,0 +1,2 @@
+#! /bin/sh
+php lambda_handler.php
