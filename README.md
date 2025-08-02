@@ -1,41 +1,39 @@
-下記、WEBページの構成案をまとめてます。
+# AWS Web Automation Project
 
-### ログイン処理：
+このプロジェクトは、AWS上で動作する自動化されたWeb構築システムです。S3を利用した静的ホスティング、
+API Gatewayを介したLambda関数（Python/PHP）を組み合わせ、
 
-- ユーザー名 / パスワード入力 → 認証リクエスト送信
-- DynamoDB から照合 → 一致すれば Top Page に遷移
+1: ユーザー作成～ログイン～トップページ遷移までを自動処理
+2: コマンドでDynamoDBにアップロードしたデータを使用して、自動でHTMLファイルを作成、および
+　 それをS3にアップロードし、Top Pageに追加したURLを自動追加
 
----
+<構成案>
 
-### CSVベースのHTMLコンテンツ自動生成
+1: HTML内に新規ユーザー作成ボタン作成
+　⇒登録ボタン押下 ⇒ API GW ⇒ Lambda(PHP) ⇒ DynamoDBへのアップロード ⇒ 登録完了メッセージ表示
 
-- ローカルPCから CSVファイルを S3 にアップロード（PUT）
-- S3PUT Eventにより、Lambdaがトリガーされ、1行ずつ DynamoDB に登録 ※PHP, Python
-- 登録済みデータを元に HTML ファイルを自動生成
-- 生成された HTML を S3 にアップロード（静的サイトとして公開）
-- Top Page の HTML を更新し、新規ページへのリンクを自動追加
+　ユーザー、PW入力し、ログインボタン押下 ⇒ API GW ⇒ Lambda(PHP) ⇒ DynamoDB内のデータで一致するものがあるか確認
+　⇒ 一致するものがあった場合は、TOPページに移行　
 
----
 
-## 🔄 システム構成フロー
+2: 自PC ⇒ CSVのデータ ⇒ S3 Bucket PUT ⇒ Lambda ⇒ CSVデータを1行ずつDynamoDBにアップロード 
+　　⇒ データを利用して、自動的にHTML作成 & HTMLファイルをS3 アップロード & Top PageのURL更新しS3 bucketにアップロード
 
-[自PC] → [CSV Upload → S3] → [Lambda Trigger] → [CSV → DynamoDB] → [Lambda → HTML生成 → S3] → [Top Page更新 → S3反映]
 
-- Top Page から各HTMLページへのアクセスが可能になります。
+## 🧩 構成図（Mermaid）
 
----
+```mermaid
+graph TD
+  S3[📦 S3 (Static Website)]
+  APIGW[🚪 API Gateway]
+  Lambda[🧠 Lambda (Python/PHP)]
+  SSM[🔐 AWS SSM Parameter Store]
+  CFN[📐 aws-cfn-tools (CloudFormation)]
 
-## 📝 補足
-
-- 本構成は静的ファイルベースのホスティングに最適化されており、動的サーバー不要。
-- IAMロールやAPI Gatewayの設定は別途記載予定。
-
----
-
-## 🚀 将来拡張のアイデア
-
-- 多言語対応（HTMLテンプレートの切り替え）
-- HTMLテンプレートのレイアウト調整（CSS/JS）
-- ユーザー別ページのアクセス制限（S3の署名付きURLなど）
-
----
+  S3 --> APIGW
+  APIGW --> Lambda
+  Lambda --> SSM
+  CFN --> S3
+  CFN --> APIGW
+  CFN --> Lambda
+  CFN --> SSM
