@@ -22,18 +22,11 @@ API Gatewayを介したLambda関数（Python/PHP）を組み合わせ、
 
 ## 🧩 構成図（Mermaid）
 
-```mermaid
-graph TD
-  S3[📦 S3 (Static Website)]
-  APIGW[🚪 API Gateway]
-  Lambda[🧠 Lambda (Python/PHP)]
-  SSM[🔐 AWS SSM Parameter Store]
-  CFN[📐 aws-cfn-tools (CloudFormation)]
-
   S3 --> APIGW
   APIGW --> Lambda
   Lambda --> SSM
   CFN --> S3
   CFN --> APIGW
   CFN --> Lambda
+
   CFN --> SSM
