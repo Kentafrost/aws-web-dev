@@ -1,0 +1,7 @@
+photo-data-display/vendor/
+photo-data-display/composer.json
+photo-data-display/composer.lock
+
+photo-data-display/gallery/csv/
+photo-data-display/gallery/html/
+photo-data-display/gallery/images/
