@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Lambda function to input login data into DynamoDB"
+
+Parameters:
+  WebS3BucketName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /WebS3BucketName
+  CodeS3Bucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /CodeS3BucketName
+  basicSNSTopicArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /basicSNSTopic
+
+Resources:
+  LoginFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "login-data-function"
+      Runtime: provided.al2
+      Handler: bootstrap
+      Code:
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: "lambda/zip/login_php.zip"
+      Timeout: 60
+      MemorySize: 128
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/lambda-api-gateway-role"
+      Environment:
+        Variables:
+          ACCOUNT_ID: !Ref AWS::AccountId
+          WebS3BUCKET: !Ref WebS3BucketName
+          SNS_TOPIC_ARN: !Ref basicSNSTopicArn
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:887080169480:layer:php73:3
+
+
+  PHPLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: php-layer
+      Description: PHP dependencies layer
+      Content:
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: layer/php-lambda-layer.zip
+      CompatibleRuntimes:
+        - provided.al2
+      LicenseInfo: MIT
+
+  SSMLambdaFunctionName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /LoginFunctionName
+      Type: String
+      Value: !Ref LoginFunction
+
+  SSMLambdaFunctionArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /LoginFunctionArn
+      Type: String
+      Value: !GetAtt LoginFunction.Arn

@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create DynamoDB table for storing login data"
+
+Resources:
+  LoginDataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "login-data-table"
+      AttributeDefinitions:
+        - AttributeName: "username"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "username"
+          KeyType: "HASH"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableClass: STANDARD
+      DeletionProtectionEnabled: true
+      Tags:
+        - Key: "DynamoDB"
+          Value: "LoginData"
+
+  loginTableSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "login-data-table"
+      Type: String
+      Value: !Ref LoginDataTable

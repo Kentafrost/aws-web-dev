@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Lambda function to create HTTP files and upload them to S3"
+
+Parameters:
+  WebS3BucketName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /WebS3BucketName
+  CodeS3Bucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /CodeS3BucketName
+  basicSNSTopicArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /basicSNSTopic
+
+Resources:
+  HttpFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "http-creation-function"
+      Runtime: provided.al2
+      Handler: bootstrap
+      Code:
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: "lambda/zip/create-html_php.zip"
+      Timeout: 60
+      MemorySize: 128
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/lambda-api-gateway-role"
+      Environment:
+        Variables:
+          ACCOUNT_ID: !Ref AWS::AccountId
+          WebS3BUCKET: !Ref WebS3BucketName
+          SNS_TOPIC_ARN: !Ref basicSNSTopicArn
+      Layers:
+        - !Ref PHPLayer
+
+  PHPLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: php-layer
+      Description: PHP dependencies layer
+      Content:
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: layer/php-lambda-layer.zip
+      CompatibleRuntimes:
+        - provided.al2
+      LicenseInfo: MIT
+
+  # Lambda permission for S3 to invoke the function
+  S3InvokeLambdaPermission:
+    DependsOn:
+      - HttpFunction
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: "http-creation-function"
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub "arn:aws:s3:::${WebS3BucketName}"
+
+  SSMLambdaFunctionName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /HttpFunctionName
+      Type: String
+      Value: !Ref HttpFunction
+
+  SSMLambdaFunctionArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /HttpFunctionArn
+      Type: String
+      Value: !GetAtt HttpFunction.Arn

@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create DynamoDB table for storing HTTP data"
+
+Resources:
+  http-data-table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "http-data-table"
+      AttributeDefinitions:
+        - AttributeName: "title"
+          AttributeType: "S"
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "description"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "title"
+          KeyType: "HASH"
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      # IAM permission
+      
+
+  httpTableSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "http-data-table"
+      Type: String
+      Value: !Ref http-data-table
