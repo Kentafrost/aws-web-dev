@@ -1,0 +1,44 @@
+Composer通信エラー（SSL周り） トラブルシューティング履歴
+
+ステージ①：初期セットアップと環境整備
+Composer install実施
+⇒Composer curl error 60 発生 
+　→ PHP が OpenSSLとリンクされていない疑い
+
+php -i の出力に SSL Version や libcurl Version が表示されないことを確認
+
+複数の PHP ビルド（ZTS / NTS / 8.4.11 / 8.3.24 / 8.2.29）に切り替え検証
+
+
+ステージ②：DLL依存関係の調査と補完
+　libssl-3-x64.dll・libcrypto-3-x64.dll・libssh2.dll が不足していることを確認
+
+　Git for Windowsの mingw64/bin/ からDLLを抽出し、C:\PHP に配置
+
+　deplister.exe を使い、php_curl.dll の依存関係を確認 → 多くは OK、一部 NOTFOUND
+
+
+ステージ③：VC++ランタイム／UCRTまわりの修復対応
+　vc_redist.x64.exe を管理者として再インストール／修復
+
+　・システムファイルが破損している可能性
+　　⇒sfc /scannow を実行してシステムファイルの破損を確認
+
+　api-ms-win-crt-xxx.dll が存在していることを確認し、UCRTは正常と判断
+
+
+ステージ④：cacert.pem と Composer設定の再確認
+　curl公式の cacert.pem を再取得し、正しいパスで curl.cainfo / openssl.cafile に設定
+
+　Composerにも明示的に CA ファイルを登録
+
+bash
+composer config --global cafile C:\PHP\extras\ssl\cacert.pem
+
+※ composer diagnose や composer install -vvv にて SSL検証が通るかを確認
+
+
+ステージ⑤：セキュリティソフトの影響説
+　複数回にわたって設定を整えても SSL通信が失敗
+
+　Nortonのアンインストール後、Composer通信が成功 → HTTPSスキャンによる証明書すり替え干渉が原因だったことを確定
