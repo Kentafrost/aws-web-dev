@@ -19,7 +19,7 @@ $filePath = urldecode($file);
 // Security check - ensure path is within allowed directories
 $allowedBasePaths = [
     'D:\\Entertainments-videos',
-    'G:\\My Drive\\Entertainment\\ASMR\\favorite\\'
+    'G:\\My Drive\\Entertainment\\'
 ];
 
 $pathAllowed = false;

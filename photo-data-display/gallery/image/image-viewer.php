@@ -144,6 +144,29 @@
         .media-item:hover .loading-overlay {
             opacity: 1;
         }
+        .audio-selected {
+            background: #d4edda !important;
+            border-left: 4px solid #28a745 !important;
+        }
+        .audio-indicator {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .video-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+        .video-buttons a {
+            min-width: 120px;
+            text-align: center;
+        }
         .media-stats {
             display: flex;
             justify-content: space-between;
@@ -306,14 +329,14 @@
 <body>
     <div class="container">
         <div class="back-link">
-            <a href="image-fold-choose.php">← Back to Folder Browser</a>
+            <a href="javascript:history.back()">← Back to Browser</a>
         </div>
         
         <h1>Media Viewer</h1>
 
-        <!-- ASMR Audio File Selector -->
+        <!-- audio Audio File Selector -->
         <div class="folder-selector" style="margin-bottom: 25px;">
-            <h2>🎵 ASMR Audio Files</h2>
+            <h2>🎵 audio Audio Files</h2>
             <p>Select an audio file to play:</p>
             
             <form action="" method="GET" style="margin-bottom: 15px;">
@@ -323,16 +346,16 @@
                 <?php endif; ?>
                 
                 <select name="audio_file" onchange="this.form.submit()" style="margin-right: 10px;">
-                    <option value="">-- Select an ASMR audio file --</option>
+                    <option value="">-- Select an audio audio file --</option>
                     <?php
-                    $asmrFolderPath = 'G:\\My Drive\\Entertainment\\ASMR\\favorite\\';
+                    $audioFolderPath = 'G:\\My Drive\\Entertainment\\audio\\favorite\\';
                     $selectedAudioFile = $_GET['audio_file'] ?? '';
                     
-                    if (is_dir($asmrFolderPath)) {
+                    if (is_dir($audioFolderPath)) {
                         // Get audio files recursively (WAV and MP3)
                         $audioFiles = array_merge(
-                            glob($asmrFolderPath . '**/*.wav', GLOB_BRACE),
-                            glob($asmrFolderPath . '**/*.mp3', GLOB_BRACE)
+                            glob($audioFolderPath . '**/*.wav', GLOB_BRACE),
+                            glob($audioFolderPath . '**/*.mp3', GLOB_BRACE)
                         );
                         
                         if (!empty($audioFiles)) {
@@ -341,7 +364,7 @@
                             
                             foreach ($audioFiles as $audioFile) {
                                 $fileName = basename($audioFile);
-                                $relativeFolder = str_replace($asmrFolderPath, '', dirname($audioFile));
+                                $relativeFolder = str_replace($audioFolderPath, '', dirname($audioFile));
                                 $displayName = !empty($relativeFolder) ? $relativeFolder . '/' . $fileName : $fileName;
                                 $selected = ($selectedAudioFile === $audioFile) ? 'selected' : '';
                                 
@@ -353,7 +376,7 @@
                             echo "<option disabled>No audio files found</option>";
                         }
                     } else {
-                        echo "<option disabled>ASMR folder not accessible</option>";
+                        echo "<option disabled>audio folder not accessible</option>";
                     }
                     ?>
                 </select>
@@ -363,7 +386,7 @@
                 <?php endif; ?>
             </form>
             
-            <?php if (!empty($selectedAudioFile) && file_exists($selectedAudioFile)): ?>
+            <!-- <?php if (!empty($selectedAudioFile) && file_exists($selectedAudioFile)): ?>
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
                     <h4 style="margin-top: 0; color: #155724;">🎧 Now Playing</h4>
                     <div style="margin-bottom: 10px;">
@@ -374,7 +397,7 @@
                     
                     <!-- Debug streaming URL -->
                     <div style="margin-bottom: 10px; font-size: 12px; color: #6c757d;">
-                        <strong>Streaming URL:</strong> <small>stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?></small>
+                        <strong>Streaming URL:</strong> <small>../common/stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?></small>
                     </div>
                     
                     <audio controls style="width: 100%; margin-top: 10px;" preload="metadata">
@@ -393,7 +416,7 @@
                         • Try right-clicking the streaming URL above to test direct access<br>
                         • File is being streamed in chunks to handle large sizes
                     </div>
-                </div>
+                </div> -->
             <?php elseif (!empty($selectedAudioFile)): ?>
                 <div style="background: #f8d7da; padding: 15px; border-radius: 5px; color: #721c24; border-left: 4px solid #dc3545;">
                     ⚠️ Selected audio file not found: <?php echo htmlspecialchars($selectedAudioFile); ?>
@@ -418,8 +441,16 @@
         $folderPath = urldecode($folderPath);
         
         // Security check - ensure path is within allowed directory
-        $allowedBasePath = 'D:\\Entertainments-videos';
-        if (strpos($folderPath, $allowedBasePath) !== 0) {
+        $allowedBasePath = ['D:\\Entertainments-videos', 'G:\\My Drive\\Entertainment\\'];
+        $isAllowed = false;
+        foreach ($allowedBasePath as $basePath) {
+            if (strpos($folderPath, $basePath) === 0) {
+                $isAllowed = true;
+                break;
+            }
+        }
+
+        if (!$isAllowed) {
             echo "<div class='error-message'>";
             echo "<h3>Access Denied</h3>";
             echo "<p>Access to this directory is not allowed.</p>";
@@ -437,9 +468,18 @@
         }
         
         // Display folder information
-        echo "<div class='folder-info'>";
-        echo "<h3>📁 " . htmlspecialchars(basename($folderPath)) . "</h3>";
+        echo "<div class='folder-info " . (!empty($selectedAudioFile) ? 'audio-selected' : '') . "'>";
+        echo "<h3>📁 " . htmlspecialchars(basename($folderPath));
+        if (!empty($selectedAudioFile)) {
+            echo "<span class='audio-indicator'>🎵 audio Mode</span>";
+        }
+        echo "</h3>";
         echo "<div class='folder-path'>" . htmlspecialchars($folderPath) . "</div>";
+        if (!empty($selectedAudioFile)) {
+            echo "<div style='margin-top: 10px; font-size: 14px; color: #155724;'>";
+            echo "🎧 audio selected: " . htmlspecialchars(basename($selectedAudioFile));
+            echo "</div>";
+        }
         echo "</div>";
         
         // Function to format file sizes
@@ -453,13 +493,11 @@
         // Function to create web-accessible path
         function createWebPath($filePath) {
             // Use our streaming script for media files
-            return 'stream-media.php?file=' . urlencode($filePath);
+            return '../common/stream-media.php?file=' . urlencode($filePath);
         }
         
         // Supported file extensions
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'ico'];
-        $videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', '3gp', 'm4v', 'mpg', 'mpeg'];
-        $audioExtensions = ['wav', 'mp3', 'ogg', 'aac', 'm4a', 'flac'];
         
         // Scan folder for media files
         $mediaFiles = [];
@@ -496,28 +534,6 @@
                             'modified' => filemtime($fullPath)
                         ];
                         $imageCount++;
-                    } elseif (in_array($extension, $videoExtensions)) {
-                        $mediaFiles[] = [
-                            'name' => $item,
-                            'path' => $fullPath,
-                            'webPath' => createWebPath($fullPath),
-                            'type' => 'video',
-                            'extension' => $extension,
-                            'size' => $fileSize,
-                            'modified' => filemtime($fullPath)
-                        ];
-                        $videoCount++;
-                    } elseif (in_array($extension, $audioExtensions)) {
-                        $mediaFiles[] = [
-                            'name' => $item,
-                            'path' => $fullPath,
-                            'webPath' => createWebPath($fullPath),
-                            'type' => 'audio',
-                            'extension' => $extension,
-                            'size' => $fileSize,
-                            'modified' => filemtime($fullPath)
-                        ];
-                        $audioCount++;
                     }
                 }
             }
@@ -534,20 +550,8 @@
         if (!empty($mediaFiles)) {
             echo "<div class='media-stats'>";
             echo "<div class='stat-item'>";
-            echo "<div class='stat-number'>" . count($mediaFiles) . "</div>";
-            echo "<div class='stat-label'>Total Files</div>";
-            echo "</div>";
-            echo "<div class='stat-item'>";
             echo "<div class='stat-number'>" . $imageCount . "</div>";
             echo "<div class='stat-label'>Images</div>";
-            echo "</div>";
-            echo "<div class='stat-item'>";
-            echo "<div class='stat-number'>" . $videoCount . "</div>";
-            echo "<div class='stat-label'>Videos</div>";
-            echo "</div>";
-            echo "<div class='stat-item'>";
-            echo "<div class='stat-number'>" . $audioCount . "</div>";
-            echo "<div class='stat-label'>Audio</div>";
             echo "</div>";
             echo "<div class='stat-item'>";
             echo "<div class='stat-number'>" . formatBytes($totalSize) . "</div>";
@@ -586,16 +590,8 @@
                 // Media type badge
                 $typeClass = 'type-' . $media['type'];
                 echo "<span class='media-type {$typeClass}'>" . strtoupper($media['type']) . "</span>";
-                
-                // Check file size for warnings
-                $fileSizeMB = $media['size'] / (1024 * 1024);
-                $isLargeFile = $fileSizeMB > 100; // Files larger than 100MB
-                $isVeryLargeFile = $fileSizeMB > 300; // Files larger than 300MB
 
                 if ($media['type'] === 'image') {
-                    if ($isLargeFile) {
-                        echo "<div class='loading-overlay'>Large image - Click to load</div>";
-                    }
                     // Find the image index in the imageData array
                     $imageIndex = 0;
                     foreach ($imageData as $imgIdx => $imgData) {
@@ -605,45 +601,12 @@
                         }
                     }
                     echo "<img src='{$media['webPath']}' alt='" . htmlspecialchars($media['name']) . "' onclick='openLightbox({$imageIndex})' loading='lazy'>";
-                } elseif ($media['type'] === 'video') {
-                    if ($isVeryLargeFile) {
-                        echo "<div style='padding: 20px; text-align: center; background: #f8f9fa; border-radius: 5px; height: 200px; display: flex; flex-direction: column; justify-content: center;'>";
-                        echo "<div style='font-size: 48px; margin-bottom: 10px;'>🎬</div>";
-                        echo "<p style='color: #dc3545; font-weight: bold;'>Very Large File (" . number_format($fileSizeMB, 1) . " MB)</p>";
-                        echo "<a href='{$media['webPath']}' target='_blank' style='background: #007bff; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none;'>Open in New Tab</a>";
-                        echo "</div>";
-                    } else {
-                        echo "<video controls preload='metadata'>";
-                        echo "<source src='{$media['webPath']}' type='video/{$media['extension']}'>";
-                        echo "Your browser does not support the video tag.";
-                        echo "</video>";
-                        if ($isLargeFile) {
-                            echo "<div class='file-size-warning large-file-warning'>Large file (" . number_format($fileSizeMB, 1) . " MB) - May take time to load</div>";
-                        }
-                    }
-                } elseif ($media['type'] === 'audio') {
-                    echo "<div style='padding: 20px; text-align: center; background: #f8f9fa; border-radius: 5px; height: 200px; display: flex; flex-direction: column; justify-content: center;'>";
-                    echo "<div style='font-size: 48px; margin-bottom: 10px;'>🎵</div>";
-                    if ($isLargeFile) {
-                        echo "<p style='color: #856404; font-size: 12px; margin: 5px 0;'>Large audio file (" . number_format($fileSizeMB, 1) . " MB)</p>";
-                    }
-                    echo "<audio controls style='width: 100%;' preload='metadata'>";
-                    echo "<source src='{$media['webPath']}' type='audio/{$media['extension']}'>";
-                    echo "Your browser does not support the audio tag.";
-                    echo "</audio>";
-                    echo "</div>";
                 }
                 
                 echo "<div class='media-filename'>";
                 echo htmlspecialchars($media['name']) . "<br>";
                 echo "<small>" . formatBytes($media['size']) . " • " . strtoupper($media['extension']) . "</small>";
-                
-                // File size warning
-                if ($isVeryLargeFile) {
-                    echo "<div class='file-size-warning large-file-warning'>⚠️ Very Large File - Consider using external player</div>";
-                } elseif ($isLargeFile) {
-                    echo "<div class='file-size-warning'>⚠️ Large File - May load slowly</div>";
-                }
+
                 echo "</div>";
                 echo "</div>";
             }

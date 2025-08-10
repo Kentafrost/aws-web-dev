@@ -53,20 +53,26 @@
         <a href="gallery/dmm-websites-description.php">DMM Websites Description</a>
 
         <p>PNG Images from the images folder:</p>
-        <a href="gallery/image-fold-choose.php">View Images</a>
+        <a href="gallery/image/image-fold-choose.php">View Images</a>
 
-        <p> Sending Questionnaire</p>
-        <form action="send_questionaire.php" method="post">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required><br><br>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required><br><br>
-            <label for="phone">Phone:</label>
-            <input type="tel" id="phone" name="phone"><br><br>
-            <label for="question">Question:</label><br>
-            <textarea id="question" name="question" rows="4" cols="50"></textarea><br><br>
-            <input type="submit" value="Submit">
-        </form>
+        <p>Videos and audios from the folder:</p>
+        <a href="gallery/video-audio/video-audio-fold-choose.php">View Videos and Audios</a>    
+
+
+        <br>
+            <p> Sending Questionnaire</p>
+            <form action="send_questionaire.php" method="post">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required><br><br>
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone"><br><br>
+                <label for="question">Question:</label><br>
+                <textarea id="question" name="question" rows="4" cols="50"></textarea><br><br>
+                <input type="submit" value="Submit">
+            </form>
+        </br>
     </div>
 </body>
 </html>
