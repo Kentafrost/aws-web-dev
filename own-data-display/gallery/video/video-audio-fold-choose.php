@@ -281,7 +281,7 @@
                             echo "<div style='margin: 4px 0; margin-left: 15px; font-family: monospace;'>";
                             echo $folderIndent . "📁 ";
                             $folderParam = urlencode($fullPath);
-                            echo "<a href='folder-viewer.php?folder=" . $folderParam . "' class='folder-link' style='text-decoration: none; color: #007bff; font-weight: bold; font-size: 14px;'>";
+                            echo "<a href='../common/folder-viewer.php?folder=" . $folderParam . "' class='folder-link' style='text-decoration: none; color: #007bff; font-weight: bold; font-size: 14px;'>";
                             echo htmlspecialchars($folder) . "</a>";
                             echo " <span style='color: #6c757d; font-size: 12px;'>(" . $itemCount . " items)</span>";
                             echo "</div>";
@@ -702,7 +702,7 @@
                             echo "<div style='margin: 4px 0; margin-left: 15px; font-family: monospace;'>";
                             echo $folderIndent . "📁 ";
                             $folderParam = urlencode($fullPath);
-                            echo "<a href='folder-viewer.php?folder=" . $folderParam . "' class='folder-link' style='text-decoration: none; color: #007bff; font-weight: bold; font-size: 14px;'>";
+                            echo "<a href='../common/folder-viewer.php?folder=" . $folderParam . "' class='folder-link' style='text-decoration: none; color: #007bff; font-weight: bold; font-size: 14px;'>";
                             echo htmlspecialchars($folder) . "</a>";
                             echo " <span style='color: #6c757d; font-size: 12px;'>(" . $itemCount . " items)</span>";
                             echo "</div>";
@@ -768,7 +768,7 @@
                         foreach ($folders as $folder) {
                             $subFolderPath = $folderPath . DIRECTORY_SEPARATOR . $folder;
                             if (is_readable($subFolderPath)) {
-                                displaySimpleFolderSection($subFolderPath, $folder, $maxDepth, $currentDepth + 1);
+                                displaySimpleFolderSectionG($subFolderPath, $folder, $maxDepth, $currentDepth + 1);
                             }
                         }
                     }

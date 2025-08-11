@@ -129,20 +129,20 @@
         if (in_array($extension, ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'webm'])) {
             echo "<h3>🎬 Video Player</h3>";
             echo "<video controls>";
-            echo "<source src='stream-media.php?file=" . urlencode($filePath) . "'>";
+            echo "<source src='../common/stream-media.php?file=" . urlencode($filePath) . "'>";
             echo "Your browser doesn't support video playback.";
             echo "</video>";
             
         } elseif (in_array($extension, ['mp3', 'wav', 'ogg', 'aac', 'm4a'])) {
             echo "<h3>🎵 Audio Player</h3>";
             echo "<audio controls>";
-            echo "<source src='stream-media.php?file=" . urlencode($filePath) . "'>";
+            echo "<source src='../common/stream-media.php?file=" . urlencode($filePath) . "'>";
             echo "Your browser doesn't support audio playback.";
             echo "</audio>";
             
         } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
             echo "<h3>🖼️ Image Viewer</h3>";
-            echo "<img src='stream-media.php?file=" . urlencode($filePath) . "' alt='" . htmlspecialchars($fileName) . "' onclick='this.style.maxHeight=this.style.maxHeight===\"none\"?\"70vh\":\"none\"'>";
+            echo "<img src='../common/stream-media.php?file=" . urlencode($filePath) . "' alt='" . htmlspecialchars($fileName) . "' onclick='this.style.maxHeight=this.style.maxHeight===\"none\"?\"70vh\":\"none\"'>";
             
         } else {
             echo "<h3>📄 File Download</h3>";
@@ -153,8 +153,8 @@
         ?>
 
         <div class="controls">
-            <a href="stream-media.php?file=<?= urlencode($filePath) ?>" target="_blank">🔗 Open in New Tab</a>
-            <a href="stream-media.php?file=<?= urlencode($filePath) ?>" download>💾 Download</a>
+            <a href="../common/stream-media.php?file=<?= urlencode($filePath) ?>" target="_blank">🔗 Open in New Tab</a>
+            <a href="../common/stream-media.php?file=<?= urlencode($filePath) ?>" download>💾 Download</a>
         </div>
     </div>
 

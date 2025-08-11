@@ -405,7 +405,7 @@
                         $fileExtension = strtolower(pathinfo($selectedAudioFile, PATHINFO_EXTENSION));
                         $mimeType = ($fileExtension === 'mp3') ? 'audio/mpeg' : 'audio/wav';
                         ?>
-                        <source src="stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?>" type="<?php echo $mimeType; ?>">
+                        <source src="../common/stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?>" type="<?php echo $mimeType; ?>">
                         Your browser does not support the audio tag.
                     </audio>
                     

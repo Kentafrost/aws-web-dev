@@ -21,8 +21,8 @@ try {
         'version' => 'latest',
     ]);
     
-    $csv = "./gallery/csv/dmm-websites.csv"; 
-    $HTMLPath = "./gallery/html/"; 
+    $csv = "./csv/dmm-websites.csv"; 
+    $HTMLPath = "./html/"; 
 
     // Get all objects in the csv
     $csv_data = read_csv($csv);

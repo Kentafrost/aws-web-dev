@@ -40,11 +40,11 @@ if (is_dir($audioDir)) {
         echo "Test file: " . htmlspecialchars($testFile) . "<br>";
         echo "Full path: " . htmlspecialchars($testPath) . "<br>";
         echo "URL encoded: " . urlencode($testPath) . "<br>";
-        echo "Stream URL: stream-media.php?file=" . urlencode($testPath) . "<br>";
+        echo "Stream URL: ../common/stream-media.php?file=" . urlencode($testPath) . "<br>";
         
         echo "<h3>Test Audio Player:</h3>";
         echo "<audio controls>";
-        echo "<source src='stream-media.php?file=" . urlencode($testPath) . "' type='audio/mpeg'>";
+        echo "<source src='../common/stream-media.php?file=" . urlencode($testPath) . "' type='audio/mpeg'>";
         echo "Your browser does not support audio.";
         echo "</audio>";
     }

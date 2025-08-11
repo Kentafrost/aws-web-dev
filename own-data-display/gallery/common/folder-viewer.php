@@ -159,11 +159,11 @@
         .image-container:hover img {
             transform: scale(1.05);
         }
-        .asmr-selected {
+        .audio-selected {
             background: #d4edda !important;
             border-left: 4px solid #28a745 !important;
         }
-        .asmr-indicator {
+        .audio-indicator {
             background: #28a745;
             color: white;
             padding: 4px 8px;
@@ -349,9 +349,9 @@
         
         <h1>Media Viewer</h1>
 
-        <!-- ASMR Audio File Selector -->
+        <!-- Audio File Selector -->
         <div class="folder-selector" style="margin-bottom: 25px;">
-            <h2>🎵 ASMR Audio Files</h2>
+            <h2>🎵 Audio Files</h2>
             <p>Select an audio file to play:</p>
             
             <form action="" method="GET" style="margin-bottom: 15px;">
@@ -361,16 +361,16 @@
                 <?php endif; ?>
                 
                 <select name="audio_file" onchange="this.form.submit()" style="margin-right: 10px;">
-                    <option value="">-- Select an ASMR audio file --</option>
+                    <option value="">-- Select an audio file --</option>
                     <?php
-                    $asmrFolderPath = 'G:\\My Drive\\Entertainment\\ASMR\\favorite\\';
+                    $audioFolderPath = 'G:\\My Drive\\Entertainment\\Audio\\favorite\\';
                     $selectedAudioFile = $_GET['audio_file'] ?? '';
                     
-                    if (is_dir($asmrFolderPath)) {
+                    if (is_dir($audioFolderPath)) {
                         // Get audio files recursively (WAV and MP3)
                         $audioFiles = array_merge(
-                            glob($asmrFolderPath . '**/*.wav', GLOB_BRACE),
-                            glob($asmrFolderPath . '**/*.mp3', GLOB_BRACE)
+                            glob($audioFolderPath . '**/*.wav', GLOB_BRACE),
+                            glob($audioFolderPath . '**/*.mp3', GLOB_BRACE)
                         );
                         
                         if (!empty($audioFiles)) {
@@ -379,7 +379,7 @@
                             
                             foreach ($audioFiles as $audioFile) {
                                 $fileName = basename($audioFile);
-                                $relativeFolder = str_replace($asmrFolderPath, '', dirname($audioFile));
+                                $relativeFolder = str_replace($audioFolderPath, '', dirname($audioFile));
                                 $displayName = !empty($relativeFolder) ? $relativeFolder . '/' . $fileName : $fileName;
                                 $selected = ($selectedAudioFile === $audioFile) ? 'selected' : '';
                                 
@@ -391,7 +391,7 @@
                             echo "<option disabled>No audio files found</option>";
                         }
                     } else {
-                        echo "<option disabled>ASMR folder not accessible</option>";
+                        echo "<option disabled>Audio folder not accessible</option>";
                     }
                     ?>
                 </select>
@@ -412,7 +412,7 @@
                     
                     <!-- Debug streaming URL -->
                     <div style="margin-bottom: 10px; font-size: 12px; color: #6c757d;">
-                        <strong>Streaming URL:</strong> <small>stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?></small>
+                        <strong>Streaming URL:</strong> <small>../common/stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?></small>
                     </div>
                     
                     <audio controls style="width: 100%; margin-top: 10px;" preload="metadata">
@@ -420,7 +420,7 @@
                         $fileExtension = strtolower(pathinfo($selectedAudioFile, PATHINFO_EXTENSION));
                         $mimeType = ($fileExtension === 'mp3') ? 'audio/mpeg' : 'audio/wav';
                         ?>
-                        <source src="stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?>" type="<?php echo $mimeType; ?>">
+                        <source src="../common/stream-media.php?file=<?php echo urlencode($selectedAudioFile); ?>" type="<?php echo $mimeType; ?>">
                         Your browser does not support the audio tag.
                     </audio>
                     
@@ -478,21 +478,29 @@
             echo "<div class='error-message'>";
             echo "<h3>Folder Not Accessible</h3>";
             echo "<p>The selected folder cannot be accessed: " . htmlspecialchars($folderPath) . "</p>";
+            echo "<p><strong>Debug Info:</strong></p>";
+            echo "<ul>";
+            echo "<li>Folder exists: " . (file_exists($folderPath) ? 'Yes' : 'No') . "</li>";
+            echo "<li>Is directory: " . (is_dir($folderPath) ? 'Yes' : 'No') . "</li>";
+            echo "<li>Is readable: " . (is_readable($folderPath) ? 'Yes' : 'No') . "</li>";
+            echo "<li>Real path: " . (realpath($folderPath) ?: 'Not found') . "</li>";
+            echo "<li>URL Parameter: " . htmlspecialchars($_GET['folder'] ?? 'Not set') . "</li>";
+            echo "</ul>";
             echo "</div>";
             exit;
         }
         
         // Display folder information
-        echo "<div class='folder-info " . (!empty($selectedAudioFile) ? 'asmr-selected' : '') . "'>";
+        echo "<div class='folder-info " . (!empty($selectedAudioFile) ? 'audio-selected' : '') . "'>";
         echo "<h3>📁 " . htmlspecialchars(basename($folderPath));
         if (!empty($selectedAudioFile)) {
-            echo "<span class='asmr-indicator'>🎵 ASMR Mode</span>";
+            echo "<span class='audio-indicator'>🎵 Audio Mode</span>";
         }
         echo "</h3>";
         echo "<div class='folder-path'>" . htmlspecialchars($folderPath) . "</div>";
         if (!empty($selectedAudioFile)) {
             echo "<div style='margin-top: 10px; font-size: 14px; color: #155724;'>";
-            echo "🎧 ASMR selected: " . htmlspecialchars(basename($selectedAudioFile));
+            echo "🎧 Audio selected: " . htmlspecialchars(basename($selectedAudioFile));
             echo "</div>";
         }
         echo "</div>";
@@ -508,7 +516,7 @@
         // Function to create web-accessible path
         function createWebPath($filePath) {
             // Use our streaming script for media files
-            return 'stream-media.php?file=' . urlencode($filePath);
+            return '../common/stream-media.php?file=' . urlencode($filePath);
         }
         
         // Supported file extensions
@@ -653,16 +661,16 @@
                 if ($media['type'] === 'video') {
                     echo "<div style='padding: 20px; text-align: center; background: #f8f9fa; border-radius: 5px; height: 200px; display: flex; flex-direction: column; justify-content: center;'>";
                     echo "<div style='font-size: 48px; margin-bottom: 10px;'>🎬</div>";
-                    
-                    // Get the selected ASMR file
+
+                    // Get the selected Audio file
                     $selectedAudioFile = $_GET['audio_file'] ?? '';
                     
                     echo "<div class='video-buttons'>";
                     
                     if (!empty($selectedAudioFile)) {
-                        // Create link to video-asmr-player.php with both video and ASMR
-                        $videoAsmrUrl = 'video-asmr-player.php?video=' . urlencode($media['path']) . '&asmr=' . urlencode($selectedAudioFile);
-                        echo "<a href='{$videoAsmrUrl}' target='_blank' style='background: #28a745; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold;'>🎵 Watch with ASMR</a>";
+                        // Create link to video-audio-player.php with both video and audio
+                        $videoAudioUrl = 'video-audio-player.php?video=' . urlencode($media['path']) . '&audio=' . urlencode($selectedAudioFile);
+                        echo "<a href='{$videoAudioUrl}' target='_blank' style='background: #28a745; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold;'>🎵 Watch with Audio</a>";
                     }
                     
                     // Regular video link

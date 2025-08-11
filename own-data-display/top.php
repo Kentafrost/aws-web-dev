@@ -48,17 +48,14 @@
     <div class="container">
         <h1>Welcome to the Top Page</h1>
         <p>This is a placeholder for your top page content.</p>
-        
-        <p> view dmm websites description </p>
-        <a href="gallery/dmm-websites-description.php">DMM Websites Description</a>
 
         <p>PNG Images from the images folder:</p>
         <a href="gallery/image/image-fold-choose.php">View Images</a>
 
         <p>Videos and audios from the folder:</p>
-        <a href="gallery/video-audio/video-audio-fold-choose.php">View Videos and Audios</a>    
+        <a href="gallery/video/video-audio-fold-choose.php">View Videos and Audios</a>    
 
-
+        <div>
         <br>
             <p> Sending Questionnaire</p>
             <form action="send_questionaire.php" method="post">
@@ -73,6 +70,7 @@
                 <input type="submit" value="Submit">
             </form>
         </br>
+    </div>
     </div>
 </body>
 </html>

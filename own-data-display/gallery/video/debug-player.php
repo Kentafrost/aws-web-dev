@@ -96,7 +96,7 @@
         <div class="section">
             <h3>🎬 Video Player</h3>
             <video id="videoPlayer" controls>
-                <source src="stream-media.php?file=<?= urlencode($videoFile) ?>" type="video/mp4">
+                <source src="../common/stream-media.php?file=<?= urlencode($videoFile) ?>" type="video/mp4">
                 Video not supported
             </video>
             <button class="video-btn" onclick="videoPlayer.play()">▶️ Play Video</button>
@@ -156,7 +156,7 @@
             // Construct the full path
             const audioDir = '<?= addslashes($audioDir) ?>';
             const fullPath = audioDir + selectedFile;
-            const streamUrl = 'stream-media.php?file=' + encodeURIComponent(fullPath);
+            const streamUrl = '../common/stream-media.php?file=' + encodeURIComponent(fullPath);
             
             // Debug info
             audioDebug.innerHTML = 'Selected: ' + selectedFile + '<br>' +

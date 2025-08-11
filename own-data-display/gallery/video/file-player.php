@@ -189,7 +189,7 @@
 
         // Player controls
         echo "<div class='controls'>";
-        echo "<button onclick=\"window.open('stream-media.php?file=" . urlencode($filePath) . "', '_blank')\">🔗 Open in New Tab</button>";
+        echo "<button onclick=\"window.open('../common/stream-media.php?file=" . urlencode($filePath) . "', '_blank')\">🔗 Open in New Tab</button>";
         echo "<button onclick=\"copyToClipboard('" . htmlspecialchars($filePath) . "')\">📋 Copy Path</button>";
         if ($fileType === 'video') {
             echo "<button onclick=\"window.open('video-audio-player.php?video=" . urlencode($filePath) . "', '_blank')\" style='background: #28a745;'>🎵 Watch with Audio</button>";
@@ -203,20 +203,20 @@
         if ($fileType === 'video') {
             echo "<h3>🎬 Video Player</h3>";
             echo "<video controls preload='metadata' style='width: 100%; max-height: 60vh;'>";
-            echo "<source src='stream-media.php?file=" . urlencode($filePath) . "' type='" . $mimeType . "'>";
+            echo "<source src='../common/stream-media.php?file=" . urlencode($filePath) . "' type='" . $mimeType . "'>";
             echo "Your browser does not support the video tag.";
             echo "</video>";
             
         } elseif ($fileType === 'audio') {
             echo "<h3>🎵 Audio Player</h3>";
             echo "<audio controls preload='metadata' style='width: 100%;'>";
-            echo "<source src='stream-media.php?file=" . urlencode($filePath) . "' type='" . $mimeType . "'>";
+            echo "<source src='../common/stream-media.php?file=" . urlencode($filePath) . "' type='" . $mimeType . "'>";
             echo "Your browser does not support the audio tag.";
             echo "</audio>";
             
         } elseif ($fileType === 'image') {
             echo "<h3>🖼️ Image Viewer</h3>";
-            echo "<img src='stream-media.php?file=" . urlencode($filePath) . "' alt='" . htmlspecialchars($fileName) . "' style='max-width: 100%; max-height: 70vh; cursor: zoom-in;' onclick='toggleImageSize(this)'>";
+            echo "<img src='../common/stream-media.php?file=" . urlencode($filePath) . "' alt='" . htmlspecialchars($fileName) . "' style='max-width: 100%; max-height: 70vh; cursor: zoom-in;' onclick='toggleImageSize(this)'>";
             
         } else {
             echo "<h3>📄 File Preview</h3>";
@@ -228,7 +228,7 @@
 
         // Download link
         echo "<div style='text-align: center;'>";
-        echo "<a href='stream-media.php?file=" . urlencode($filePath) . "' download class='download-link'>💾 Download File</a>";
+        echo "<a href='../common/stream-media.php?file=" . urlencode($filePath) . "' download class='download-link'>💾 Download File</a>";
         echo "</div>";
         ?>
 

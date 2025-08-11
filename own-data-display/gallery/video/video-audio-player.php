@@ -350,7 +350,7 @@
                 <strong>Size:</strong> <?= formatFileSize($videoFile) ?>
             </div>
             <video id="videoPlayer" controls preload="metadata">
-                <source src="stream-media.php?file=<?= urlencode($videoFile) ?>" type="video/mp4">
+                <source src="../common/stream-media.php?file=<?= urlencode($videoFile) ?>" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
             <div class="volume-control">
@@ -378,10 +378,10 @@
                         default: $audioMimeType = 'audio/mpeg';
                     }
                     ?>
-                    <source src="stream-media.php?file=<?= urlencode($audioFile) ?>" type="<?= $audioMimeType ?>">
+                    <source src="../common/stream-media.php?file=<?= urlencode($audioFile) ?>" type="<?= $audioMimeType ?>">
                     <!-- Fallback for different browsers -->
-                    <source src="stream-media.php?file=<?= urlencode($audioFile) ?>" type="audio/mpeg">
-                    <source src="stream-media.php?file=<?= urlencode($audioFile) ?>" type="audio/wav">
+                    <source src="../common/stream-media.php?file=<?= urlencode($audioFile) ?>" type="audio/mpeg">
+                    <source src="../common/stream-media.php?file=<?= urlencode($audioFile) ?>" type="audio/wav">
                 <?php endif; ?>
                 Your browser does not support the audio tag.
             </audio>
@@ -434,7 +434,7 @@
             if (selectedFile) {
                 // Construct the full Audiofile path
                 const audioPath = '<?= addslashes($audioDir) ?>' + selectedFile;
-                const streamUrl = 'stream-media.php?file=' + encodeURIComponent(audioPath);
+                const streamUrl = '../common/stream-media.php?file=' + encodeURIComponent(audioPath);
                 
                 // Set the audio source
                 audioPlayer.src = streamUrl;
@@ -543,7 +543,7 @@
         }
 
         function openaudioDirect() {
-            const audioUrl = 'stream-media.php?file=<?= urlencode($audioFile) ?>';
+            const audioUrl = '../common/stream-media.php?file=<?= urlencode($audioFile) ?>';
             window.open(audioUrl, '_blank');
         }
 
