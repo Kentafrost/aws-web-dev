@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>作品集-ページ番号:{page_number}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    
+    <style>
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0px;
+        }
+
+        .card {
+            background-color: #fdfcf5;
+            border-left: 5px solid #6b8e23;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card a {
+            font-weight: bold;
+            color: #556b2f;
+            text-decoration: none;
+        }
+
+        .card a:hover {
+            color: #007acc;
+        }
+
+        #main-content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        #sidebar {
+        width: 400px;
+        padding: 20px;
+        background-color: #f0f8ff;
+        border-left: 1px solid #ccc;
+        overflow-y: auto;
+        }
+
+        table {
+        width: 100%;
+        border-collapse: collapse;
+        }
+
+        th, td {
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+        }
+
+        a {
+        color: #007acc;
+        text-decoration: none;
+        }
+
+        a:hover {
+        text-decoration: underline;
+        }
+
+    </style>
+    
+</head>
+
+
+<body>
+    <h1>リンク集 {page_number}</h1>
+    <div id="linkList"></div>
+
+    <h2>以下リンク集まとめ</h2>
+
+    <div id="main-content">
+        <div class="card-list">
+            {content}
+        </div>
+    </div>
+
+    <script src="../js/html_listup.js" defer></script>
+</body>
+</html>

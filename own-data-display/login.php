@@ -1,6 +1,7 @@
 <?php
-
-require_once 'vendor/autoload.php';  // Add this line
+$current_path = __DIR__;
+$parent_path = dirname($current_path);
+require_once "${parent_path}/vendor/autoload.php";
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

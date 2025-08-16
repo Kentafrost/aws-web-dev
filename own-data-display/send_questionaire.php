@@ -1,6 +1,7 @@
 <?php
-// Lambda function to handle incoming requests and store data in DynamoDB
-require 'vendor/autoload.php';
+$current_path = __DIR__;
+$parent_path = dirname($current_path);
+require_once "${parent_path}/vendor/autoload.php";
 
 use Aws\DynamoDb\DynamoDbClient;
 
