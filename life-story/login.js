@@ -1,4 +1,5 @@
 // Login and User Registration JavaScript
+
 class AuthManager {
     constructor(apiEndpoint = 'login.php') {
         this.apiEndpoint = apiEndpoint;

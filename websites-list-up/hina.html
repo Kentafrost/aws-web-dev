@@ -11,16 +11,27 @@
     <style>
         .card-list {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 0px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            justify-content: start;
+            width: 100%;
         }
 
         .card {
             background-color: #fdfcf5;
             border-left: 5px solid #6b8e23;
             padding: 10px;
-            border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
         }
 
         .card:hover {
@@ -37,13 +48,34 @@
             color: #007acc;
         }
 
+        body {
+            margin: 0;
+            padding: 0 20px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .page-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: flex-start;
+            margin-top: 0px;
+            padding-top: 0px;
+            width: 100%;
+            min-height: 100vh;
+        }
+
         #main-content {
             flex: 1;
-            padding: 20px;
+            padding: 0;
+            padding-right: 40px;
+            min-width: 0;
+            max-width: calc(100% - 340px);
         }
 
         #sidebar {
-        width: 400px;
+        width: 300px;
         padding: 20px;
         background-color: #f0f8ff;
         border-left: 1px solid #ccc;
@@ -70,23 +102,123 @@
         text-decoration: underline;
         }
 
+        /* レスポンシブデザイン - より広いスクリーンで最適化 */
+        @media (min-width: 1200px) {
+            .card-list {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .card-list {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+        }
+
+        @media (min-width: 2000px) {
+            .card-list {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
     </style>
-    
 </head>
 
 
 <body>
-    <h1>リンク集 {page_number}</h1>
-    <div id="linkList"></div>
-
+    <h1>リンク集_{page_number}</h1>
+    
     <h2>以下リンク集まとめ</h2>
 
-    <div id="main-content">
-        <div class="card-list">
-            {content}
+    <div class="page-layout">
+        <div id="main-content">
+            <div class="card-list">
+                {content}
+            </div>
         </div>
+
+        <aside id="sidebar">
+            <h3> ◆ページ一覧 </h3>
+            <table id="linkTable">
+                <thead>
+                    <tr><th>ファイル名</th><th>リンク</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </aside>
     </div>
 
-    <script src="../js/html_listup.js" defer></script>
+    <script>
+        console.log('Loading file list...');
+        
+        // Try multiple possible paths for fileList.json
+        const possiblePaths = [
+            '../js/fileList.json',
+            './js/fileList.json',
+            '/js/fileList.json',
+            'fileList.json'
+        ];
+        
+        async function loadFileList() {
+            for (const path of possiblePaths) {
+                try {
+                    console.log(`Trying path: ${path}`);
+                    const response = await fetch(path);
+                    
+                    if (response.ok) {
+                        const files = await response.json();
+                        console.log('Files loaded from:', path, files);
+                        populateTable(files);
+                        return;
+                    }
+                } catch (error) {
+                    console.log(`Failed to load from ${path}:`, error);
+                    continue;
+                }
+            }
+            
+            // If all paths fail, show error
+            console.error('Could not load file list from any path');
+            const tbody = document.querySelector('#linkTable tbody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="2" style="color:red;">ファイルリストを読み込めませんでした</td></tr>`;
+            }
+        }
+        
+        function populateTable(files) {
+            const tbody = document.querySelector('#linkTable tbody');
+            
+            if (!tbody) {
+                console.error('Table body not found!');
+                return;
+            }
+            
+            let addedCount = 0;
+            files.forEach(file => {
+                if (file.endsWith('.html')) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${file}</td>
+                        <td><a href="${file}">開く</a></td>
+                    `;
+                    tbody.appendChild(row);
+                    addedCount++;
+                }
+            });
+            
+            console.log(`Added ${addedCount} links to the table`);
+            
+            if (addedCount === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="color:orange;">該当するHTMLファイルが見つかりませんでした</td></tr>`;
+            }
+        }
+        
+        // Load file list when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadFileList);
+        } else {
+            loadFileList();
+        }
+    </script>
+
 </body>
 </html>
