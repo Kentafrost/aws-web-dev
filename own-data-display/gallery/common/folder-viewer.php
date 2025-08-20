@@ -669,7 +669,7 @@
                     
                     if (!empty($selectedAudioFile)) {
                         // Create link to video-audio-player.php with both video and audio
-                        $videoAudioUrl = 'video-audio-player.php?video=' . urlencode($media['path']) . '&audio=' . urlencode($selectedAudioFile);
+                        $videoAudioUrl = '../video/video-audio-player.php?video=' . urlencode($media['path']) . '&audio=' . urlencode($selectedAudioFile);
                         echo "<a href='{$videoAudioUrl}' target='_blank' style='background: #28a745; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold;'>🎵 Watch with Audio</a>";
                     }
                     

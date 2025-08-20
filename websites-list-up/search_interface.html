@@ -109,20 +109,46 @@
             const maxPages = document.getElementById('maxPages').value;
             const resultDiv = document.getElementById('result');
             
+            console.log('Form submission started');
+            console.log('Search word:', searchWord);
+            console.log('Max pages:', maxPages);
+            
             // Show loading message
             resultDiv.className = 'loading';
             resultDiv.innerHTML = '検索中です...しばらくお待ちください。';
             
+            const requestBody = `search_word=${encodeURIComponent(searchWord)}&max_pages=${maxPages}`;
+            console.log('Request body:', requestBody);
+            
             try {
+                console.log('Sending fetch request...');
                 const response = await fetch('/search', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `search_word=${encodeURIComponent(searchWord)}&max_pages=${maxPages}`
+                    body: requestBody
                 });
                 
-                const result = await response.json();
+                console.log('Received response:', response);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // レスポンスのテキストを取得してログ出力
+                const responseText = await response.text();
+                console.log('Response text length:', responseText.length);
+                console.log('Response text:', responseText);
+                
+                // JSONとしてパースを試行
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('Parsed JSON result:', result);
+                } catch (jsonError) {
+                    console.error('JSON parse error:', jsonError);
+                    console.error('Failed to parse response text:', responseText.substring(0, 200));
+                    throw new Error(`サーバーから無効なレスポンスを受信しました: ${responseText.substring(0, 100)}...`);
+                }
                 
                 if (response.ok) {
                     resultDiv.className = 'success';
@@ -130,12 +156,16 @@
                     // ファイルリンクを生成
                     const fileLinks = result.file_paths ? result.file_paths.map(path => {
                         const filename = path.split('/').pop() || path.split('\\').pop();
-                        return `<li><a href="html/${filename}">${filename}</a></li>`;
+                        return `<li><a href="html/${filename}" target="_blank">${filename}</a></li>`;
                     }).join('') : '';
+                    
+                    // 検索ワードが配列の場合の表示
+                    const searchWordsDisplay = Array.isArray(result.search_words) ? 
+                        result.search_words.join(', ') : result.search_words || searchWord;
                     
                     resultDiv.innerHTML = `
                         <h3>検索完了！</h3>
-                        <p>検索ワード: <strong>${searchWord}</strong></p>
+                        <p>検索ワード: <strong>${searchWordsDisplay}</strong></p>
                         <p>処理ページ数: ${maxPages}</p>
                         <p>見つかったアイテム数: ${result.total_items || 0}</p>
                         <p>生成されたファイル数: ${result.files_created || 0}</p>
@@ -143,7 +173,7 @@
                         <ul>${fileLinks}</ul>
                     `;
                 } else {
-                    throw new Error(result.error || 'エラーが発生しました');
+                    throw new Error(result.error || `サーバーエラー (${response.status}): ${responseText}`);
                 }
                 
             } catch (error) {

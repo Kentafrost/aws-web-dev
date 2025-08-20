@@ -1,19 +1,26 @@
 from flask import Flask, request, jsonify, render_template, send_from_directory
 import json
-import boto3
 import pandas as pd
 import requests
-import os, sys
+import os
 from bs4 import BeautifulSoup
 import time
 import csv
 
-def list_websites(search_words, max_pages):
+# Try to import secret_variables, use defaults if not available
+try:
+    import secret_variables
+    SECRET_VARS_AVAILABLE = True
+except ImportError:
+    SECRET_VARS_AVAILABLE = False
+    print("Warning: secret_variables.py not found. Using default URLs.")
+
+def list_websites(search_words, max_pages, url):
     
     item_count = 0
-    web_data_list = []
+    data_list = []
     
-    # Handle multiple search words
+    # Handle multiple search words (should already be a list when called)
     if isinstance(search_words, str):
         search_words = [word.strip() for word in search_words.split(',')]
 
@@ -28,8 +35,9 @@ def list_websites(search_words, max_pages):
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                 }
-                
-                response = requests.get(f"{web_url}?word={search_word}&c=&page={page_num}", headers=headers)
+                response = requests.get(f"{url}?word={search_word}&c=&page={page_num}", headers=headers)
+                print(f"Request URL: {url}?word={search_word}&c=&page={page_num}")
+                print(f"Response status: {response.status_code}")
                 
                 if response.status_code == 200:
                     # Parse HTML content
@@ -64,7 +72,7 @@ def list_websites(search_words, max_pages):
                         if link and link.has_attr('href'):
                             item_url = link.get('href')
                             if not item_url.startswith('http'):
-                                item_url = web_url + item_url
+                                item_url = url + item_url
                         
                         # Get the image URL
                         img = img_src.find('img')
@@ -79,7 +87,7 @@ def list_websites(search_words, max_pages):
                         
                         item_count += 1
                         
-                        web_data_list.append({
+                        data_list.append({
                             'No': item_count,
                             'Title': title,
                             'URL': item_url,
@@ -97,30 +105,40 @@ def list_websites(search_words, max_pages):
                 print(f"Error on page {page_num} for '{search_word}': {str(e)}")
                 continue
 
-    return web_data_list
+    return data_list
 
-def csv_writer(web_data_list, output_filename):
-    if not web_data_list:
+def csv_writer(data_list, output_filename, url):
+    if not data_list:
         print("No data to write to CSV")
         return
     
-    os.makedirs(csv_dir, exist_ok=True)
-    csv_file_path = os.path.join(csv_dir, f'{output_filename}.csv')
+    if url == web_url:
+        category = "movie"
+    elif url == anime_url:
+        category = "anime"
     
+    os.makedirs(csv_dir, exist_ok=True)
+    csv_file_path = os.path.join(csv_dir, f'{output_filename}_{category}.csv')
+
     with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = ['No', 'Title', 'URL', 'Picture', 'Page_Number', 'Search_Word']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         writer.writeheader()
-        for item in web_data_list:
+        for item in data_list:
             writer.writerow(item)
     
     print(f"CSV file created: {csv_file_path}")
     return csv_file_path
 
-def generate_html_files(output_filename):
+def generate_html_files(output_filename, url):
     # Read HTML template
     template_path = os.path.join(current_dir, 'hina.html')
+    
+    if url == web_url:
+        category = "movie"
+    elif url == anime_url:
+        category = "anime"
     
     if not os.path.exists(template_path):
         return {"error": f"Template file not found: {template_path}"}
@@ -132,11 +150,24 @@ def generate_html_files(output_filename):
             return {"error": "Template does not contain {content} placeholder"}
 
     # make HTML file using data in CSV file
-    csv_file = os.path.join(csv_dir, f'{output_filename}.csv')
+    csv_file = os.path.join(csv_dir, f'{output_filename}_{category}.csv')
+    print(f"Looking for CSV file: {csv_file}")
+    
     if not os.path.exists(csv_file):
+        print(f"CSV file not found: {csv_file}")
+        # List available CSV files for debugging
+        if os.path.exists(csv_dir):
+            available_files = [f for f in os.listdir(csv_dir) if f.endswith('.csv')]
+            print(f"Available CSV files: {available_files}")
         return {"error": f"CSV file not found: {csv_file}"}
         
-    df = pd.read_csv(csv_file)
+    try:
+        df = pd.read_csv(csv_file)
+        print(f"CSV file loaded successfully. Rows: {len(df)}")
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")
+        return {"error": f"Error reading CSV file: {e}"}
+        
     files_created = []
 
     grouped = df.groupby('Page_Number')
@@ -144,13 +175,13 @@ def generate_html_files(output_filename):
     # Create individual HTML files for each page
     for page_num, group in grouped:
         content_html = ""  # reset each page
+        print(f"Creating HTML for page {page_num} with {len(group)} items")
         
         # Group by search word within the page
         search_words_in_page = group.groupby('Search_Word')
         
         for search_word, search_group in search_words_in_page:
-            search_words_num = f"検索ワード: {search_word}_ページ {page_num}"
-            content_html = ""
+            content_html += f"<h2>検索ワード: {search_word}</h2>"
             
             for index, row in search_group.iterrows():
                 title = row['Title']
@@ -169,15 +200,19 @@ def generate_html_files(output_filename):
 
         # replace {content} in HTML template with actual content for this page
         final_html = template_html.replace('{content}', content_html)
-        final_html = final_html.replace('{page_number}', search_words_num)
+        final_html = final_html.replace('{page_number}', f"ページ {page_num}")
 
         # save it into the output HTML file for this specific page
-        output_html_path = os.path.join(html_dir, f'{output_filename}_page_{page_num}.html')
+        output_html_path = os.path.join(html_dir, f'{output_filename}_{category}_page_{page_num}.html')
         os.makedirs(os.path.dirname(output_html_path), exist_ok=True)
 
-        with open(output_html_path, 'w', encoding='utf-8') as f:
-            f.write(final_html)
-            files_created.append(f'{output_filename}_page_{page_num}.html')
+        try:
+            with open(output_html_path, 'w', encoding='utf-8') as f:
+                f.write(final_html)
+                files_created.append(f'{output_html_path}')
+                print(f"Created HTML file: {output_html_path}")
+        except Exception as e:
+            print(f"Error creating HTML file {output_html_path}: {e}")
 
     # Create a combined HTML file with all results
     all_content_html = ""
@@ -233,28 +268,18 @@ def generate_html_files(output_filename):
         f.write(index_html)
         files_created.append(f'{output_filename}_index.html')
 
-    # Copy fileList.json to html directory for easier access from generated HTML files
-    import shutil
-    source_json = os.path.join(current_dir, 'js', 'fileList.json')
-    dest_json = os.path.join(html_dir, 'fileList.json')
-    if os.path.exists(source_json):
-        try:
-            shutil.copy2(source_json, dest_json)
-            print(f"Copied fileList.json to html directory")
-        except Exception as e:
-            print(f"Failed to copy fileList.json: {e}")
-
     return {"files_created": files_created}
 
 
 app = Flask(__name__, template_folder='./', static_folder='./', static_url_path='')
 
 # URL and search word, change these as needed
-web_url = ""
-exception_words = [""]
+web_url = secret_variables.get_secret_variables()[0]
+anime_url = secret_variables.get_secret_variables()[1]
+exception_words = secret_variables.get_secret_variables()[2]
 
 # skip titles with exception words
-if exception_words == []:
+if not exception_words:
     print(f"No exception words written, skipping check to except")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -292,54 +317,125 @@ def list_files():
 
 @app.route('/search', methods=['POST'])
 def search():
+    print("=== SEARCH ENDPOINT CALLED ===")
+    print(f"Request method: {request.method}")
+    print(f"Request content type: {request.content_type}")
+    print(f"Request form data: {request.form}")
+    print(f"Request data: {request.data}")
     
-    search_word = request.form.get('search_word', '').strip()
-    max_pages = int(request.form.get('max_pages', 5))
-    output_filename = 'search_results'
+    try:
+        search_words = request.form.get('search_word', '').strip()
+        max_pages = int(request.form.get('max_pages', 5))
+        
+        print(f"Received search request: words='{search_words}', max_pages={max_pages}")
+        
+        if not search_words:
+            error_response = {"error": "検索ワードを入力してください"}
+            print(f"Returning error response: {error_response}")
+            return jsonify(error_response), 400
+
+        # Convert to list if it's a comma-separated string
+        if isinstance(search_words, str):
+            search_words = [word.strip() for word in search_words.split(',') if word.strip()]
+        
+        all_web_data_list = []
+        all_results = []
+        
+        for search_word in search_words:
+            print(f"Starting search for: {search_word}, max pages: {max_pages}")
+            output_filename = f'search_results_{search_word.replace(" ", "_")}'
+
+            # Get website data for single search word
+            web_data_list = list_websites([search_word], max_pages, web_url)  # Ensure web_url is passed
+            anime_data_list = list_websites([search_word], max_pages, anime_url)  # Ensure anime_url is passed
+
+            if web_data_list:
+                print(f"Found {len(web_data_list)} items for '{search_word}'")
+                all_web_data_list.extend(web_data_list)
+                
+                # Save to CSV
+                try:
+                    csv_path = csv_writer(web_data_list, output_filename, web_url)
+                    csv_path = csv_writer(anime_data_list, output_filename, anime_url)
+
+                    print(f"CSV saved: {csv_path}")
+                except Exception as e:
+                    print(f"Error saving CSV: {e}")
+            
+                # Generate HTML files
+                try:
+                    movie_files = generate_html_files(output_filename, web_url)
+                    anime_files = generate_html_files(output_filename, anime_url)
+
+                    # url1
+                    if "error" not in movie_files:
+                        print(f"HTML files created: {movie_files['files_created']}")
+
+                        # list up all html file in HTML directory
+                        html_files = [f for f in os.listdir(html_dir) if f.endswith('.html')]
+                        all_results.extend(html_files)
+
+                        js_filelist_path = os.path.join(current_dir, 'js', 'fileList.json')
+                        html_filelist_path = os.path.join(html_dir, 'fileList.json')
+
+                        for path in [js_filelist_path, html_filelist_path]:
+                            try:
+                                with open(path, 'w', encoding='utf-8') as f:
+                                    all_results.sort()
+                                    json.dump(all_results, f, ensure_ascii=False, indent=2)                            
+                                print(f"Updated fileList.json at: {path}")
+                            except Exception as e:
+                                print(f"Failed to update {path}: {e}")
+                    else:
+                        print(f"Error generating HTML files: {movie_files.get('error', 'Unknown error')}")
+
+                    # url2
+                    if "error" not in anime_files:
+                        print(f"HTML files created: {anime_files['files_created']}")
+
+                        # list up all html file in HTML directory
+                        html_files = [f for f in os.listdir(html_dir) if f.endswith('.html')]
+                        all_results.extend(html_files)
+
+                        js_filelist_path = os.path.join(current_dir, 'js', 'fileList.json')
+                        html_filelist_path = os.path.join(html_dir, 'fileList.json')
+
+                        for path in [js_filelist_path, html_filelist_path]:
+                            try:
+                                with open(path, 'w', encoding='utf-8') as f:
+                                    all_results.sort()
+                                    json.dump(all_results, f, ensure_ascii=False, indent=2)
+                                print(f"Updated fileList.json at: {path}")
+                            except Exception as e:
+                                print(f"Failed to update {path}: {e}")
+                    else:
+                        print(f"Error generating HTML files: {anime_files.get('error', 'Unknown error')}")
+                        
+                except Exception as e:
+                    print(f"Error generating HTML files: {e}")
+
+            else:
+                print(f"No data found for search word: '{search_word}'")
+        
+        if not all_web_data_list:
+            return jsonify({"error": "データが見つかりませんでした", "search_words": search_words}), 404
+
+        response_data = {
+            'search_words': search_words,
+            'max_pages': max_pages,
+            'total_items': len(all_web_data_list),
+            'files_created': len(set(all_results)),
+            'file_paths': list(set(all_results))
+        }
+        
+        print(f"Search completed successfully: {response_data}")
+        return jsonify(response_data)
     
-    if not search_word:
-        return jsonify({"error": "検索ワードを入力してください"}), 400
-
-    print(f"Starting search for: {search_word}, max pages: {max_pages}")
-
-    # Get website data
-    web_data_list = list_websites(search_word, max_pages)
-
-    if not web_data_list:
-        return jsonify({"error": "データが見つかりませんでした"}), 404
-
-    # Save to CSV
-    csv_path = csv_writer(web_data_list, output_filename)
-    
-    # Generate HTML files
-    result = generate_html_files(output_filename)
-
-    if "error" in result:
-        return jsonify(result), 500
-    
-    # Update fileList.json with newly created files
-    html_files = [f for f in os.listdir(html_dir) if f.endswith('.html') and output_filename in f]
-    
-    # Update both locations - js folder and html folder
-    js_filelist_path = os.path.join(current_dir, 'js', 'fileList.json')
-    html_filelist_path = os.path.join(html_dir, 'fileList.json')
-    
-    for path in [js_filelist_path, html_filelist_path]:
-        try:
-            with open(path, 'w', encoding='utf-8') as f:
-                json.dump(result['files_created'], f, ensure_ascii=False, indent=2)
-            print(f"Updated fileList.json at: {path}")
-        except Exception as e:
-            print(f"Failed to update {path}: {e}")
-
-    return jsonify({
-        'search_word': search_word,
-        'max_pages': max_pages,
-        'total_items': len(web_data_list),
-        'files_created': len(result['files_created']),
-        'file_paths': result['files_created'],
-        'csv_file': os.path.basename(csv_path) if csv_path else None
-    })
+    except Exception as e:
+        print(f"Error in search endpoint: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"サーバー内部エラー: {str(e)}"}), 500
 
 if __name__ == '__main__':
     # Create directories if they don't exist

@@ -1,7 +1,69 @@
-own-data-display/vendor/
-own-data-display/composer.json
-own-data-display/composer.lock
+vendor/
+composer.json
+composer.lock
 
-own-data-display/gallery/csv/
-own-data-display/gallery/html/
-own-data-display/gallery/images/
+websites-list-up/csv/
+websites-list-up/html/
+websites-list-up/images/
+
+# Ignore sensitive credential and authentication files
+*credentials.json
+*token.pickle
+*OAuth_credentials.json
+**/*credentials.json
+**/*token.pickle
+**/*OAuth_credentials.json
+**/credentials.json
+**/token.pickle
+**/OAuth_credentials.json
+
+# AWS credentials
+.aws/
+**/aws/credentials
+**/aws/config
+**/.aws/
+*aws_credentials*
+*aws_secret*
+*aws_access*
+
+# Google credentials
+*service_account*.json
+*client_secret*.json
+*google_credentials*.json
+
+# API keys and tokens
+*api_key*
+*secret_key*
+*access_token*
+*refresh_token*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.*
+
+# Config files that might contain secrets
+config.ini
+config.cfg
+settings.json
+**/config/*.json
+**/config/*.ini
+**/config/*.cfg
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+log/
+
+websites-list-up/js/fileList.json
+websites-list-up/secret_variables.py
+websites-list-up/php/secret_variables.php
+websites-list-up/php/old/**
