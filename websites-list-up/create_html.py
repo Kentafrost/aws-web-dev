@@ -4,8 +4,14 @@ import pandas as pd
 import requests
 import os
 from bs4 import BeautifulSoup
-import time
-import csv
+import time, sys
+import csv, logging
+
+# parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+
+import common
 
 # Try to import secret_variables, use defaults if not available
 try:
@@ -15,10 +21,24 @@ except ImportError:
     SECRET_VARS_AVAILABLE = False
     print("Warning: secret_variables.py not found. Using default URLs.")
 
+
+# delete all files in html folder
+import shutil
+current_dir = os.path.dirname(os.path.abspath(__file__))
+html_dir = os.path.join(current_dir, 'html')
+
+if os.path.exists(html_dir):
+    shutil.rmtree(html_dir)
+    logging.info(f"Deleted existing HTML directory: {html_dir}")
+os.makedirs(html_dir, exist_ok=True)
+logging.info(f"Created HTML directory: {html_dir}")
+
+
 def list_websites(search_words, max_pages, url):
     
     item_count = 0
     data_list = []
+    logging.info("Listing websites...")
     
     # Handle multiple search words (should already be a list when called)
     if isinstance(search_words, str):
@@ -36,10 +56,12 @@ def list_websites(search_words, max_pages, url):
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                 }
                 response = requests.get(f"{url}?word={search_word}&c=&page={page_num}", headers=headers)
-                print(f"Request URL: {url}?word={search_word}&c=&page={page_num}")
-                print(f"Response status: {response.status_code}")
-                
+                logging.info(f"Request URL: {url}?word={search_word}&c=&page={page_num}")
+                logging.info(f"Response status: {response.status_code}")
+
                 if response.status_code == 200:
+                    logging.info(f"Successfully retrieved page {page_num} for '{search_word}'")
+                    
                     # Parse HTML content
                     soup = BeautifulSoup(response.content, 'html.parser')
                     
@@ -57,7 +79,7 @@ def list_websites(search_words, max_pages, url):
                         if exception_words:
                             for exception_word in exception_words:
                                 if exception_word in title:
-                                    print(f"Skipped (contains '{exception_word}'): {title}")
+                                    logging.info(f"Skipped (contains '{exception_word}'): {title}")
                                     skip_title = True
                                     break
                         
@@ -95,14 +117,15 @@ def list_websites(search_words, max_pages, url):
                             'Page_Number': page_num,
                             'Search_Word': search_word
                         })
-                    
-                    print(f"Page {page_num} for '{search_word}': Found {len(item_titles)} items")
+
+                    logging.info(f"Page {page_num} for '{search_word}': Found {len(item_titles)} items")
                     time.sleep(1)  # Be nice to the server
                 else:
                     print(f"Failed to retrieve page {page_num} for '{search_word}': {response.status_code}")
-                
+                    logging.error(f"Failed to retrieve page {page_num} for '{search_word}': {response.status_code}")
+
             except Exception as e:
-                print(f"Error on page {page_num} for '{search_word}': {str(e)}")
+                logging.error(f"Error on page {page_num} for '{search_word}': {str(e)}")
                 continue
 
     return data_list
@@ -134,6 +157,7 @@ def csv_writer(data_list, output_filename, url):
 def generate_html_files(output_filename, url):
     # Read HTML template
     template_path = os.path.join(current_dir, 'hina.html')
+    logging.info(f"Generating HTML files using template: {template_path}")
     
     if url == web_url:
         category = "movie"

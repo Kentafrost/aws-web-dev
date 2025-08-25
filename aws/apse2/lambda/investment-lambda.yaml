@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Lambda function to send notifications for investments"
+
+Parameters:
+  CodeS3Bucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /CodeS3BucketName
+  basicSNSTopicArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /basicSNSTopic
+  DynamoDBTable:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /NotificationLogTable
+  EvbInvoke:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /NotificationEvbInvoke
+
+Resources:
+  SendNotificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "investment-notification-function"
+      Runtime: python3.12
+      Handler: investment-notification.lambda_handler
+      Code:
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: "lambda/zip/investment-notification.zip"
+      Timeout: 60
+      MemorySize: 128
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/lambda-dynamodb-role"
+      Environment:
+        Variables:
+          ACCOUNT_ID: !Ref AWS::AccountId
+          SNS_TOPIC_ARN: !Ref basicSNSTopicArn
+          DYNAMODB_TABLE: !Ref DynamoDBTable
+
+  EvbPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref SendNotificationFunction
+      Principal: "events.amazonaws.com"
+      SourceArn: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${EvbInvoke}"
+
+  SSMLambdaFunctionName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /SendNotificationFunctionName
+      Type: String
+      Value: !Ref SendNotificationFunction
+
+  SSMLambdaFunctionArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /SendNotificationFunctionArn
+      Type: String
+      Value: !GetAtt SendNotificationFunction.Arn

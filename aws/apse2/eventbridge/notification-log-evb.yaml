@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Lambda function to send notifications for investments"
+
+Resources:
+  NotificationRule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: "cron(0 0 1 * ? *)"
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:investment-notification-function
+          Id: "NotificationFunction"
+
+  EvbSSM:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: "NotificationEvbInvoke"
+      Type: "String"
+      Value: !Ref NotificationRule

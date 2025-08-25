@@ -1,0 +1,4 @@
+aws_parameter.py
+csv/
+zip/
+**/old/**
