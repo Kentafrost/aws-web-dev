@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Please Answer the Following Questions</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -74,50 +74,49 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Several Questions to know what Japanese prefecture you might like</h2>
 
+<body>
+    <div id="app" class="container">
+        <h2>Several Questions to know what Japanese prefecture you might like</h2>
         <p>Please answer these questions below</p>
 
-        <form id="questionForm">
-            <div class="form-group">
-                <label for="question0">Where are you from?</label>
-                <select id="question0" name="country" required>
-                    <option value="">Select your country</option>
-                </select>
-            </div>
+        <form @submit.prevent="questionForm">
+            <!-- 国選択 -->
+        <div class="form-group">
+            <select v-model="form.country" @change="fetchDishes" required>
+                <option disabled value="">Select your country</option>
+                <option v-for="country in countries" :key="country">{{ country }}</option>
+            </select>
+        </div>
 
-            <div class="form-group">    
-                <label for="question1">What is your favorite type of cuisine in your country?</label>
-                
-                <input type="text" id="question2" name="cuisine" required>
-            </div>
-            
-            <div class="form-group">        
-                <label for="question2">What is your preferred climate(Celcius degree) in your country?</label>
-                <input type="text" id="question3" name="climate" required>
-            </div>
+        <!-- 好きな料理タイプ -->
+        <div class="form-group">
+            <label>What is your favorite type of cuisine in your country?</label>
+            <input type="text" v-model="form.country_cuisine" required>
+        </div>
 
-            // some buttons to answer the question
-            <div class="form-group">
-                
-                <label for="question3">What is your favorite season in your country?</label>
-                    <input type="button" id="question3" name="season" value="Spring" required>
-                    <input type="button" id="question3" name="season" value="Summer" required>
-                    <input type="button" id="question3" name="season" value="Fall" required>
-                    <input type="button" id="question3" name="season" value="Winter" required>
-            </div>
+        <!-- 気候 -->
+        <div class="form-group">
+            <label>What is your preferred climate (°C) in your country?</label>
+            <input type="text" v-model="form.climate" required>
+        </div>
 
-            <button type="button" class="btn-register" onclick="register()">Done</button>
-        </form>
-        <div id="message"></div>
+        <!-- 季節選択 -->
+        <div class="form-group">
+            <label>What is your favorite season in your country?</label>
+            <button
+                v-for="season in seasons"
+                :key="season"
+                type="button"
+                :class="{ active: form.season === season }"
+                @click="form.season = season"
+            >
+            {{ season }}
+            </button>
+        </div>
     </div>
 
-    <script>
-        const script = document.createElement('script');
-        script.src = 'country_list.js';
-        document.head.appendChild(script);
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="js/set_options.js"></script>
 
 </html>
