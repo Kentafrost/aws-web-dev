@@ -2,3 +2,5 @@ aws_parameter.py
 csv/
 zip/
 **/old/**
+**/shares_list.py
+memo.txt
