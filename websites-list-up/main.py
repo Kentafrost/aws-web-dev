@@ -206,8 +206,6 @@ def list_websites(search_words, max_pages, url):
                         
                         if img and img.has_attr('src'):
                             picture_url = img.get('src')
-                            # if not picture_url.startswith('http'):
-                            #     picture_url = web_url + picture_url
                         print(picture_url)
                         
                         item_count += 1
@@ -369,37 +367,10 @@ def generate_html_files(output_filename, url):
     with open(combined_output_path, 'w', encoding='utf-8') as f:
         f.write(final_html)
         files_created.append(f'{output_filename}_combined.html')
-
-    # Create an index file with page summaries
-    index_content = ""
-    page_stats = df.groupby('Page_Number').agg({
-        'Title': 'count',
-        'Search_Word': lambda x: ', '.join(x.unique())
-    }).rename(columns={'Title': 'Item_Count', 'Search_Word': 'Search_Words'})
-    
-    for page_num in sorted(page_stats.index):
-        stats = page_stats.loc[page_num]
-        index_content += f"""
-        <div class="card">
-            <h3><a href="{output_filename}_page_{page_num}.html">ページ {page_num}</a></h3>
-            <p>アイテム数: {stats['Item_Count']}</p>
-            <p>検索ワード: {stats['Search_Words']}</p>
-        </div>
-        """
-    
-    index_html = template_html.replace('{content}', index_content)
-    index_html = index_html.replace('{page_number}', 'Index')
-    
-    index_output_path = os.path.join(html_dir, f'{output_filename}_index.html')
-    with open(index_output_path, 'w', encoding='utf-8') as f:
-        f.write(index_html)
-        files_created.append(f'{output_filename}_index.html')
-
     return {"files_created": files_created}
 
 
 app = Flask(__name__, template_folder='./', static_folder='./', static_url_path='')
-
 # URL and search word, change these as needed
 web_url = secret_variables.get_secret_variables()[0]
 anime_url = secret_variables.get_secret_variables()[1]
